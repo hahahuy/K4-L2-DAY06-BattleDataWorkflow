@@ -1,161 +1,161 @@
-# Boi Canh Cho Thanh Vien Nhom Doc Truoc
+# Bối Cảnh Cho Thành Viên Nhóm Đọc Trước
 
-## 1. Bai Toan Cua Nhom La Gi?
+## 1. Bài Toán Của Nhóm Là Gì?
 
-Vinmec muon dung AI de **sap xep uu tien hang doi doc anh X-quang nguc**. Anh co dau hieu nghi ngo bat thuong se duoc dua len dau hang doi de bac si doc som hon. Anh con lai van duoc doc theo thu tu thong thuong.
+Vinmec muốn dùng AI để **sắp xếp ưu tiên hàng đợi đọc ảnh X-quang ngực**. Ảnh có dấu hiệu nghi ngờ bất thường sẽ được đưa lên đầu hàng đợi để bác sĩ đọc sớm hơn. Ảnh còn lại vẫn được đọc theo thứ tự thông thường.
 
-Day la bai toan **triage / screening**, khong phai bai toan chan doan:
+Đây là bài toán **triage / screening**, không phải bài toán chẩn đoán:
 
-- AI khong ket luan benh gi.
-- AI khong thay the bac si chan doan hinh anh.
-- AI khong duoc bo qua hay an bat ky anh nao.
-- Cuoi cung, bac si van doc tat ca cac ca.
+- AI không kết luận bệnh gì.
+- AI không thay thế bác sĩ chẩn đoán hình ảnh.
+- AI không được bỏ qua hay ẩn bất kỳ ảnh nào.
+- Cuối cùng, bác sĩ vẫn đọc tất cả các ca.
 
-Objective ma ca nhom can nho:
+Objective mà cả nhóm cần nhớ:
 
-> Tu mot anh X-quang nguc thang da duoc an danh, quyet dinh dua anh len dau hang doi bac si doc hay giu thu tu thong thuong, de cac ca nghi ngo bat thuong duoc doc som hon.
+> Từ một ảnh X-quang ngực thẳng đã được ẩn danh, quyết định đưa ảnh lên đầu hàng đợi bác sĩ đọc hay giữ thứ tự thông thường, để các ca nghi ngờ bất thường được đọc sớm hơn.
 
-## 2. Quy Tac An Toan Quan Trong Nhat
+## 2. Quy Tắc An Toàn Quan Trọng Nhất
 
-**False negative dat hon false positive.**
+**False negative đắt hơn false positive.**
 
-False negative o day la anh co dau hieu bat thuong nhung lai bi gan vao hang doi thuong. Dieu nay co the lam cham viec bac si phat hien ca nang.
+False negative ở đây là ảnh có dấu hiệu bất thường nhưng lại bị gán vào hàng đợi thường. Điều này có thể làm chậm việc bác sĩ phát hiện ca nặng.
 
-False positive la anh khong dang lo nhung van bi day len hang doi uu tien. Dieu nay lam tang tai cho bac si, nhung it nguy hiem hon bo sot ca nghi ngo.
+False positive là ảnh không đáng lo nhưng vẫn bị đẩy lên hàng đợi ưu tiên. Điều này làm tăng tải cho bác sĩ, nhưng ít nguy hiểm hơn bỏ sót ca nghi ngờ.
 
-Vi vay, workflow cua nhom phai uu tien do nhay cao cho nhan `suspected abnormality`, chap nhan co them canh bao sai, va kiem tra rat ky loi `suspected abnormality -> routine`.
+Vì vậy, workflow của nhóm phải ưu tiên độ nhạy cao cho nhãn `suspected abnormality`, chấp nhận có thêm cảnh báo sai, và kiểm tra rất kỹ lỗi `suspected abnormality -> routine`.
 
-## 3. Du Lieu Duoc Dung Va Khong Duoc Dung
+## 3. Dữ Liệu Được Dùng Và Không Được Dùng
 
-Chi dung anh y te cong khai da an danh, co giay phep / data-use agreement ro rang. Khong dung anh benh nhan that cua Vinmec hay bat ky du lieu chua an danh nao.
+Chỉ dùng ảnh y tế công khai đã ẩn danh, có giấy phép / data-use agreement rõ ràng. Không dùng ảnh bệnh nhân thật của Vinmec hay bất kỳ dữ liệu chưa ẩn danh nào.
 
-Vi du hop ly: MIMIC-CXR la bo du lieu X-quang nguc cong khai da an danh, co anh DICOM, bao cao, `patient_id` va `study_id`. Tuy nhien, no van la du lieu truy cap co kiem soat va phai tuan thu data-use agreement.
+Ví dụ hợp lý: MIMIC-CXR là bộ dữ liệu X-quang ngực công khai đã ẩn danh, có ảnh DICOM, báo cáo, `patient_id` và `study_id`. Tuy nhiên, nó vẫn là dữ liệu truy cập có kiểm soát và phải tuân thủ data-use agreement.
 
-Truoc khi annotator xem anh:
+Trước khi annotator xem ảnh:
 
-- Kiem tra metadata DICOM da an danh.
-- Kiem tra chu chen tren anh (burned-in text) co the lo thong tin ca nhan.
-- Anh hong, sai dinh dang, hoac nghi lo PHI phai vao **quarantine**, khong duoc xoa im lang.
-- Moi anh phai co dong ledger ghi nguon goc va lich su xu ly.
+- Kiểm tra metadata DICOM đã ẩn danh.
+- Kiểm tra chữ chèn trên ảnh (burned-in text) có thể lộ thông tin cá nhân.
+- Ảnh hỏng, sai định dạng, hoặc nghi lộ PHI phải vào **quarantine**, không được xóa im lặng.
+- Mỗi ảnh phải có dòng ledger ghi nguồn gốc và lịch sử xử lý.
 
-## 4. Don Vi Du Lieu, Group Key Va Leakage
+## 4. Đơn Vị Dữ Liệu, Group Key Và Leakage
 
-- **Don vi du lieu:** mot anh X-quang nguc thang (AP hoac PA) cua mot lan chup.
+- **Đơn vị dữ liệu:** một ảnh X-quang ngực thẳng (AP hoặc PA) của một lần chụp.
 - **Group key:** `patient_id`.
 
-Mot benh nhan co the chup nhieu lan. Neu anh lan 1 nam o train, anh lan 2 nam o test, model da thay gan nhu cung nguoi va ket qua test se dep gia. Day goi la **data leakage**.
+Một bệnh nhân có thể chụp nhiều lần. Nếu ảnh lần 1 nằm ở train, ảnh lần 2 nằm ở test, model đã thấy gần như cùng người và kết quả test sẽ đẹp giả. Đây gọi là **data leakage**.
 
-Do do, tat ca anh cua mot `patient_id` chi duoc nam trong mot split duy nhat. Nhom de xuat khoa split theo ty le `70% train / 10% validation / 20% test` truoc khi gan nhan hang loat. Gate bat buoc: khong co `patient_id` nao xuat hien o hon mot split.
+Do đó, tất cả ảnh của một `patient_id` chỉ được nằm trong một split duy nhất. Nhóm đề xuất khóa split theo tỷ lệ `70% train / 10% validation / 20% test` trước khi gán nhãn hàng loạt. Gate bắt buộc: không có `patient_id` nào xuất hiện ở hơn một split.
 
-## 5. Nhan La Gi?
+## 5. Nhãn Là Gì?
 
-| Nhan | Nghia dung | Hanh dong |
+| Nhãn | Nghĩa đúng | Hành động |
 |---|---|---|
-| `Suspected abnormality` | Bac si thay dau hieu tren anh co the can doc som hon, du chua chac chan chan doan cu the. | Dua vao hang doi uu tien |
-| `Routine: no suspected abnormality` | Khong co dau hieu tren anh can doc som theo quy tac da thong nhat. Khong dong nghia voi "nguoi benh hoan toan khoe". | Giu hang doi thuong |
-| `Unreadable / insufficient quality` | Anh qua mo, sai tu the, thieu vung giai phau, phoi sang toi khong phu hop, hoac artifact lam bac si khong the triage tin cay. | Chuyen kiem tra ky thuat / thu cong |
-| `Abstain / escalate` | Bac si annotator khong the chon nhan an toan theo guideline. | Chuyen senior radiologist phan xu |
+| `Suspected abnormality` | Bác sĩ thấy dấu hiệu trên ảnh có thể cần đọc sớm hơn, dù chưa chắc chắn chẩn đoán cụ thể. | Đưa vào hàng đợi ưu tiên |
+| `Routine: no suspected abnormality` | Không có dấu hiệu trên ảnh cần đọc sớm theo quy tắc đã thống nhất. Không đồng nghĩa với "người bệnh hoàn toàn khỏe". | Giữ hàng đợi thường |
+| `Unreadable / insufficient quality` | Ảnh quá mờ, sai tư thế, thiếu vùng giải phẫu, phơi sáng tối không phù hợp, hoặc artifact làm bác sĩ không thể triage tin cậy. | Chuyển kiểm tra kỹ thuật / thủ công |
+| `Abstain / escalate` | Bác sĩ annotator không thể chọn nhãn an toàn theo guideline. | Chuyển senior radiologist phân xử |
 
-Quy tac quan trong: **khong chac chan khong duoc doan bay.** Ca mo ho co the la `suspected abnormality` hoac `abstain`, tuy guideline; khong duoc tu dong gan `routine` chi vi khong chac chan.
+Quy tắc quan trọng: **không chắc chắn không được đoán bừa.** Ca mơ hồ có thể là `suspected abnormality` hoặc `abstain`, tùy guideline; không được tự động gán `routine` chỉ vì không chắc chắn.
 
-## 6. Vi Sao Guideline Phai Cu The?
+## 6. Vì Sao Guideline Phải Cụ Thể?
 
-Guideline phai mo ta dau hieu quan sat duoc, khong viet chung chung nhu "neu anh xau thi gan bat thuong".
+Guideline phải mô tả dấu hiệu quan sát được, không viết chung chung như "nếu ảnh xấu thì gán bất thường".
 
-Ca kho can dua vao guideline:
+Ca khó cần đưa vào guideline:
 
-- Mo opacities nhe / khong chac chan: uu tien `suspected abnormality`, khong goi la routine do phan van.
-- Bat thuong man tinh hay cap tinh: khong tu suy doan benh su. Neu tu anh ma can bac si doc som thi gan nghi ngo.
-- Anh bi motion, quay lech, thieu dinh phoi/goc suon-hoanh, exposure kem: neu khong triage tin cay duoc thi `unreadable`.
-- Ong, day dan, thiet bi: chi uu tien neu co dau hieu quan sat duoc theo quy tac; khong suy doan tinh trang lam sang.
+- Mờ opacity nhẹ / không chắc chắn: ưu tiên `suspected abnormality`, không gọi là routine do phân vân.
+- Bất thường mạn tính hay cấp tính: không tự suy đoán bệnh sử. Nếu từ ảnh mà cần bác sĩ đọc sớm thì gán nghi ngờ.
+- Ảnh bị motion, quay lệch, thiếu đỉnh phổi/góc sườn-hoành, exposure kém: nếu không triage tin cậy được thì `unreadable`.
+- Ống, dây dẫn, thiết bị: chỉ ưu tiên nếu có dấu hiệu quan sát được theo quy tắc; không suy đoán tình trạng lâm sàng.
 
-Guideline co version. Moi lan sua quy tac phai ghi vao decision log, va biet batch nao da dung guideline version nao.
+Guideline có version. Mỗi lần sửa quy tắc phải ghi vào decision log, và biết batch nào đã dùng guideline version nào.
 
-## 7. Tai Sao Pilot Quan Trong?
+## 7. Tại Sao Pilot Quan Trọng?
 
-Sinh vien khong du tham quyen gan nhan lam sang. Annotator bat buoc phai la bac si chan doan hinh anh, nhung bac si rat it thoi gian: gia dinh chi co 2 gio moi tuan.
+Sinh viên không đủ thẩm quyền gán nhãn lâm sàng. Annotator bắt buộc phải là bác sĩ chẩn đoán hình ảnh, nhưng bác sĩ rất ít thời gian: giả định chỉ có 2 giờ mỗi tuần.
 
-Truoc khi gan nhan nhieu, chay pilot 30 anh co ca de, kho, nghi ngo bat thuong, khac nguon, khac projection va chat luong kem.
+Trước khi gán nhãn nhiều, chạy pilot 30 ảnh có ca dễ, khó, nghi ngờ bất thường, khác nguồn, khác projection và chất lượng kém.
 
-- Hai bac si gan doc lap va khong thay dap an cua nhau.
-- Khong cho thay AI pre-label, candidate label tu report, hay nhan cua nguoi kia truoc khi luu quyet dinh dau tien. Day la cach chong **anchoring**.
-- Do weighted Cohen's kappa.
-- Xem tung ca bat dong, nhat la truong hop mot nguoi gan `routine` con nguoi kia gan `suspected abnormality`.
-- Senior radiologist hoac hoi dong da duoc chi dinh phan xu.
-- Bat dong lap lai phai bien thanh quy tac ro hon trong guideline v2.
+- Hai bác sĩ gán độc lập và không thấy đáp án của nhau.
+- Không cho thấy AI pre-label, candidate label từ report, hay nhãn của người kia trước khi lưu quyết định đầu tiên. Đây là cách chống **anchoring**.
+- Đo weighted Cohen's kappa.
+- Xem từng ca bất đồng, nhất là trường hợp một người gán `routine` còn người kia gán `suspected abnormality`.
+- Senior radiologist hoặc hội đồng đã được chỉ định phân xử.
+- Bất đồng lặp lại phải biến thành quy tắc rõ hơn trong guideline v2.
 
-Gate de qua pilot: weighted kappa `>= 0.80`, khong con nhom bat dong lap lai chua duoc giai quyet, va tat ca false-routine disagreement da duoc xem lai.
+Gate để qua pilot: weighted kappa `>= 0.80`, không còn nhóm bất đồng lặp lại chưa được giải quyết, và tất cả false-routine disagreement đã được xem lại.
 
-## 8. Gan Nhan Hang Loat Nhu The Nao Khi Bac Si It Thoi Gian?
+## 8. Gán Nhãn Hàng Loạt Như Thế Nào Khi Bác Sĩ Ít Thời Gian?
 
-Khong the bat hai bac si gan lai toan bo du lieu. Cach thuc chien hon:
+Không thể bắt hai bác sĩ gán lại toàn bộ dữ liệu. Cách thực chiến hơn:
 
-- Mot radiologist annotator gan nhan doc lap cho ca thuong.
-- Bat buoc co nguoi thu hai review cho: `suspected abnormality`, `unreadable`, `abstain`, nguon/scanner la, va ca nam trong risk queue.
-- AI hoac bao cao cu chi duoc dung de tao risk queue, khong phai ground truth.
-- He thong an AI/report suggestion cho toi khi bac si da luu nhan dau tien.
-- Reviewer khong duoc la nguoi vua gan nhan anh do.
-- Senior radiologist giai quyet abstain va disagreement; phe duyet thay doi guideline.
+- Một radiologist annotator gán nhãn độc lập cho ca thường.
+- Bắt buộc có người thứ hai review cho: `suspected abnormality`, `unreadable`, `abstain`, nguồn/scanner lạ, và ca nằm trong risk queue.
+- AI hoặc báo cáo cũ chỉ được dùng để tạo risk queue, không phải ground truth.
+- Hệ thống ẩn AI/report suggestion cho tới khi bác sĩ đã lưu nhãn đầu tiên.
+- Reviewer không được là người vừa gán nhãn ảnh đó.
+- Senior radiologist giải quyết abstain và disagreement; phê duyệt thay đổi guideline.
 
-## 9. QC: Khong Duoc Chi Bao Cao Accuracy Trung Binh
+## 9. QC: Không Được Chỉ Báo Cáo Accuracy Trung Bình
 
-Lop `routine` co the chieu da so. Neu chi bao cao accuracy tong, he thong co the nhin rat tot nhung van bo sot nhieu ca nghi ngo bat thuong.
+Lớp `routine` có thể chiếm đa số. Nếu chỉ báo cáo accuracy tổng, hệ thống có thể nhìn rất tốt nhưng vẫn bỏ sót nhiều ca nghi ngờ bất thường.
 
-Nhom tach ba dong kiem tra:
+Nhóm tách ba dòng kiểm tra:
 
-| Dong QC | Muc dich | Khong duoc dung de |
+| Dòng QC | Mục đích | Không được dùng để |
 |---|---|---|
-| Random audit | Uoc luong chat luong cua ca batch. Lay mau ngau nhien co seed, `max(10% batch, 100 anh)`. | San loi hiem hieu qua |
-| Safety audit | Tim false-routine nguy hiem. Review doc lap it nhat 100 anh da gan routine. | Uoc luong error rate chung cua batch |
-| Risk queue | Xem tat ca abstain, disagreement, low-confidence, nguon moi, anh chat luong kem. | Bao cao nhu ti le loi cua ca batch |
+| Random audit | Ước lượng chất lượng của cả batch. Lấy mẫu ngẫu nhiên có seed, `max(10% batch, 100 ảnh)`. | Săn lỗi hiếm hiệu quả |
+| Safety audit | Tìm false-routine nguy hiểm. Review độc lập ít nhất 100 ảnh đã gán routine. | Ước lượng error rate chung của batch |
+| Risk queue | Xem tất cả abstain, disagreement, low-confidence, nguồn mới, ảnh chất lượng kém. | Báo cáo như tỷ lệ lỗi của cả batch |
 
-Metric can nho:
+Metric cần nhớ:
 
 ```text
 False-routine rate
-= so anh duoc adjudicate la suspected abnormality nhung bi gan routine
-  / tong so anh suspected abnormality da duoc audit
+= số ảnh được adjudicate là suspected abnormality nhưng bị gán routine
+  / tổng số ảnh suspected abnormality đã được audit
 ```
 
-Bao cao them macro agreement, worst-class error rate, confusion matrix, va tach ket qua theo nguon, projection, chat luong, guideline version. Moi ty le phai co tu so va mau so.
+Báo cáo thêm macro agreement, worst-class error rate, confusion matrix, và tách kết quả theo nguồn, projection, chất lượng, guideline version. Mọi tỷ lệ phải có tử số và mẫu số.
 
-Gate de release ban dau:
+Gate để release ban đầu:
 
-- Macro agreement tren random audit `>= 0.90`.
-- False-routine rate tren safety audit `<= 2%`.
-- Khong con systematic error cluster chua xu ly.
+- Macro agreement trên random audit `>= 0.90`.
+- False-routine rate trên safety audit `<= 2%`.
+- Không còn systematic error cluster chưa xử lý.
 
-Con so `2%` la muc tieu thiet ke cho bai tap, khong phai tuyen bo da duoc chung minh an toan lam sang. Khi trien khai that, nguong phai do clinical governance cua Vinmec phe duyet.
+Con số `2%` là mục tiêu thiết kế cho bài tập, không phải tuyên bố đã được chứng minh an toàn lâm sàng. Khi triển khai thật, ngưỡng phải do clinical governance của Vinmec phê duyệt.
 
-## 10. Release Va Monitoring
+## 10. Release Và Monitoring
 
-Dataset chi duoc `RELEASE v1.0` khi co du bang chung:
+Dataset chỉ được `RELEASE v1.0` khi có đủ bằng chứng:
 
-1. Anh va nhan cuoi cung.
-2. Patient-level split da khoa.
-3. Guideline version va decision log.
-4. Lich su annotator, reviewer, adjudication.
-5. QC report: sample, seed, tu so/mau so, confusion matrix, corrective action.
-6. Dataset card: dung cho triage gi, khong duoc dung cho gi, nguon/license, khoang trong coverage, loi da biet, privacy control.
-7. Chu ky cua data owner cu the.
+1. Ảnh và nhãn cuối cùng.
+2. Patient-level split đã khóa.
+3. Guideline version và decision log.
+4. Lịch sử annotator, reviewer, adjudication.
+5. QC report: sample, seed, tử số/mẫu số, confusion matrix, corrective action.
+6. Dataset card: dùng cho triage gì, không được dùng cho gì, nguồn/license, khoảng trống coverage, lỗi đã biết, privacy control.
+7. Chữ ký của data owner cụ thể.
 
-Neu thieu bat ky bang chung nao: `HOLD`, ghi ro thieu gi, ai bo sung, khi nao xong.
+Nếu thiếu bất kỳ bằng chứng nào: `HOLD`, ghi rõ thiếu gì, ai bổ sung, khi nào xong.
 
-Sau release, workflow van tiep tuc. Theo doi hang tuan:
+Sau release, workflow vẫn tiếp tục. Theo dõi hàng tuần:
 
-- Nguon, scanner, AP/PA mix, chat luong anh co thay doi khong.
-- Ty le anh bi day len priority co qua cao va gay alert fatigue khong.
-- Priority co duoc doc som hon routine khong.
-- Cac ca routine co bi bo sot bat thuong khong.
-- Loi tap trung o scanner, source, projection, chat luong hay loai bat thuong nao.
+- Nguồn, scanner, AP/PA mix, chất lượng ảnh có thay đổi không.
+- Tỷ lệ ảnh bị đẩy lên priority có quá cao và gây alert fatigue không.
+- Priority có được đọc sớm hơn routine không.
+- Các ca routine có bị bỏ sót bất thường không.
+- Lỗi tập trung ở scanner, source, projection, chất lượng hay loại bất thường nào.
 
-Moi phat hien phai quay ve mot buoc cu the trong lifecycle va co nguoi chiu trach nhiem xu ly.
+Mỗi phát hiện phải quay về một bước cụ thể trong lifecycle và có người chịu trách nhiệm xử lý.
 
-## 11. Sau Cau Hoi Co The Bi Hoi
+## 11. Sáu Câu Hỏi Có Thể Bị Hỏi
 
-1. **Dataset phuc vu quyet dinh gi?** Uu tien anh X-quang nghi ngo bat thuong de bac si doc som hon; khong chan doan va khong bo qua anh nao.
-2. **Loi nao dat hon?** False negative. Vi vay uu tien sensitivity, co abstain, safety audit false-routine, chap nhan false positive.
-3. **Ca kho va cach xu ly?** Mo opacity nhe/khong chac chan: khong tu dong gan routine; gan suspected abnormality hoac abstain theo guideline.
-4. **Group key la gi?** `patient_id`; khoa split patient-level va kiem tra khong trung patient giua train/val/test.
-5. **Do chat luong bang gi?** Random audit + safety audit, macro/worst-class error, false-routine rate co tu so/mau so; reviewer doc lap, senior radiologist adjudicate.
-6. **Can bao nhieu nguoi va de vo o dau?** Data steward, radiologist annotator, reviewer, senior adjudicator, data owner. De vo nhat la thieu thoi gian bac si; xu ly bang pilot, risk-based double review, audit va relabel co muc tieu.
+1. **Dataset phục vụ quyết định gì?** Ưu tiên ảnh X-quang nghi ngờ bất thường để bác sĩ đọc sớm hơn; không chẩn đoán và không bỏ qua ảnh nào.
+2. **Lỗi nào đắt hơn?** False negative. Vì vậy ưu tiên sensitivity, có abstain, safety audit false-routine, chấp nhận false positive.
+3. **Ca khó và cách xử lý?** Mờ opacity nhẹ/không chắc chắn: không tự động gán routine; gán suspected abnormality hoặc abstain theo guideline.
+4. **Group key là gì?** `patient_id`; khóa split patient-level và kiểm tra không trùng patient giữa train/val/test.
+5. **Đo chất lượng bằng gì?** Random audit + safety audit, macro/worst-class error, false-routine rate có tử số/mẫu số; reviewer độc lập, senior radiologist adjudicate.
+6. **Cần bao nhiêu người và dễ vỡ ở đâu?** Data steward, radiologist annotator, reviewer, senior adjudicator, data owner. Dễ vỡ nhất là thiếu thời gian bác sĩ; xử lý bằng pilot, risk-based double review, audit và relabel có mục tiêu.
