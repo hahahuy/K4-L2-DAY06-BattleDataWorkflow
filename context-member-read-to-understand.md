@@ -15,6 +15,12 @@ Objective mà cả nhóm cần nhớ:
 
 > Từ một ảnh X-quang ngực thẳng đã được ẩn danh, quyết định đưa ảnh lên đầu hàng đợi bác sĩ đọc hay giữ thứ tự thông thường, để các ca nghi ngờ bất thường được đọc sớm hơn.
 
+### Hình G1: Luồng Triage Có Giới Hạn An Toàn
+
+![G1 - Luồng triage có giới hạn an toàn](g1_safety_bounded_triage_workflow.png)
+
+Hình này cho thấy đầu ra của AI chỉ là **thứ tự hàng đợi**: ưu tiên hoặc thông thường. Hai nhánh đều hội tụ ở bước bác sĩ đọc ảnh, vì AI không chẩn đoán và không được bỏ bất kỳ ảnh nào. Màu đỏ nhấn mạnh lựa chọn an toàn: false negative nguy hiểm hơn nên workflow ưu tiên sensitivity.
+
 ## 2. Quy Tắc An Toàn Quan Trọng Nhất
 
 **False negative đắt hơn false positive.**
@@ -38,6 +44,12 @@ Trước khi annotator xem ảnh:
 - Ảnh hỏng, sai định dạng, hoặc nghi lộ PHI phải vào **quarantine**, không được xóa im lặng.
 - Mỗi ảnh phải có dòng ledger ghi nguồn gốc và lịch sử xử lý.
 
+### Hình G2: Phễu Quản Trị Dữ Liệu
+
+![G2 - Phễu quản trị dữ liệu](g2_data_governance_funnel.png)
+
+Hình này mô tả cổng kiểm tra trước annotation. Dữ liệu công khai đã ẩn danh vẫn phải được kiểm tra PHI, chữ chèn trên ảnh và định dạng. Ảnh đạt điều kiện vào môi trường gán nhãn có kiểm soát; ảnh đáng ngờ vào quarantine để review, không bị xóa âm thầm.
+
 ## 4. Đơn Vị Dữ Liệu, Group Key Và Leakage
 
 - **Đơn vị dữ liệu:** một ảnh X-quang ngực thẳng (AP hoặc PA) của một lần chụp.
@@ -46,6 +58,12 @@ Trước khi annotator xem ảnh:
 Một bệnh nhân có thể chụp nhiều lần. Nếu ảnh lần 1 nằm ở train, ảnh lần 2 nằm ở test, model đã thấy gần như cùng người và kết quả test sẽ đẹp giả. Đây gọi là **data leakage**.
 
 Do đó, tất cả ảnh của một `patient_id` chỉ được nằm trong một split duy nhất. Nhóm đề xuất khóa split theo tỷ lệ `70% train / 10% validation / 20% test` trước khi gán nhãn hàng loạt. Gate bắt buộc: không có `patient_id` nào xuất hiện ở hơn một split.
+
+### Hình G3: Chia Theo Bệnh Nhân Để Chống Leakage
+
+![G3 - Chia theo bệnh nhân để chống leakage](g3_patient_level_split_prevents_leakage.png)
+
+Nửa bên trái là cách chia sai: các ảnh chụp nhiều lần của cùng một bệnh nhân rơi vào train, validation và test, khiến điểm test đẹp giả. Nửa bên phải là cách đúng: toàn bộ ảnh của một `patient_id` luôn nằm trong đúng một split.
 
 ## 5. Nhãn Là Gì?
 
@@ -57,6 +75,12 @@ Do đó, tất cả ảnh của một `patient_id` chỉ được nằm trong m�
 | `Abstain / escalate` | Bác sĩ annotator không thể chọn nhãn an toàn theo guideline. | Chuyển senior radiologist phân xử |
 
 Quy tắc quan trọng: **không chắc chắn không được đoán bừa.** Ca mơ hồ có thể là `suspected abnormality` hoặc `abstain`, tùy guideline; không được tự động gán `routine` chỉ vì không chắc chắn.
+
+### Hình G4: Cây Quyết Định Gán Nhãn
+
+![G4 - Cây quyết định gán nhãn](g4_annotation_decision_tree.png)
+
+Đọc cây từ trên xuống: đầu tiên hỏi ảnh có đủ chất lượng để triage không; nếu không thì chuyển `unreadable`. Nếu đọc được, hỏi có dấu hiệu cần bác sĩ đọc sớm không. Trường hợp có nhưng chưa chắc chắn không bị ép đoán: dùng `abstain` và chuyển phân xử.
 
 ## 6. Vì Sao Guideline Phải Cụ Thể?
 
@@ -86,6 +110,12 @@ Trước khi gán nhãn nhiều, chạy pilot 30 ảnh có ca dễ, khó, nghi n
 
 Gate để qua pilot: weighted kappa `>= 0.80`, không còn nhóm bất đồng lặp lại chưa được giải quyết, và tất cả false-routine disagreement đã được xem lại.
 
+### Hình G5: Vòng Lặp Hiệu Chỉnh Pilot
+
+![G5 - Vòng lặp hiệu chỉnh pilot](g5_pilot_calibration_loop.png)
+
+Pilot dùng 30 ảnh đa dạng để thử guideline trước khi tốn thời gian bác sĩ cho batch lớn. Hai bác sĩ gán độc lập, senior radiologist phân xử các bất đồng, rồi nhóm cập nhật guideline và reference set. Nếu không đạt gate kappa, phải sửa rule và chạy lại pilot, chưa được gán hàng loạt.
+
 ## 8. Gán Nhãn Hàng Loạt Như Thế Nào Khi Bác Sĩ Ít Thời Gian?
 
 Không thể bắt hai bác sĩ gán lại toàn bộ dữ liệu. Cách thực chiến hơn:
@@ -96,6 +126,12 @@ Không thể bắt hai bác sĩ gán lại toàn bộ dữ liệu. Cách thực 
 - Hệ thống ẩn AI/report suggestion cho tới khi bác sĩ đã lưu nhãn đầu tiên.
 - Reviewer không được là người vừa gán nhãn ảnh đó.
 - Senior radiologist giải quyết abstain và disagreement; phê duyệt thay đổi guideline.
+
+### Hình G6: Swimlane Gán Nhãn Hàng Loạt
+
+![G6 - Swimlane gán nhãn hàng loạt](g6_bulk_annotation_swimlane.png)
+
+Hình swimlane cho biết rõ **ai làm gì và bàn giao cho ai**. Data steward chỉ quản lý batch/ledger; bác sĩ gán nhãn độc lập; reviewer kiểm tra ca rủi ro; senior adjudicator giải quyết ca khó; data owner quyết định release hoặc hold. Luồng này cũng thể hiện chống anchoring: AI/report chỉ hiện sau khi bác sĩ lưu quyết định đầu tiên.
 
 ## 9. QC: Không Được Chỉ Báo Cáo Accuracy Trung Bình
 
@@ -127,6 +163,12 @@ Gate để release ban đầu:
 
 Con số `2%` là mục tiêu thiết kế cho bài tập, không phải tuyên bố đã được chứng minh an toàn lâm sàng. Khi triển khai thật, ngưỡng phải do clinical governance của Vinmec phê duyệt.
 
+### Hình G7: Dashboard QA/QC Ưu Tiên An Toàn
+
+![G7 - Dashboard QA/QC ưu tiên an toàn](g7_qaqc_safety_dashboard.png)
+
+Hình này tách ba nguồn QC có mục đích khác nhau: random audit để ước lượng cả batch, safety audit để săn lỗi false-routine, và risk queue để tìm ca dễ sai. Ô đỏ trong confusion matrix là lỗi nguy hiểm nhất: ca thật sự nghi ngờ bất thường nhưng bị gán `routine`. Không được dùng kết quả từ risk queue để báo cáo tỷ lệ lỗi chung.
+
 ## 10. Release Và Monitoring
 
 Dataset chỉ được `RELEASE v1.0` khi có đủ bằng chứng:
@@ -141,6 +183,12 @@ Dataset chỉ được `RELEASE v1.0` khi có đủ bằng chứng:
 
 Nếu thiếu bất kỳ bằng chứng nào: `HOLD`, ghi rõ thiếu gì, ai bổ sung, khi nào xong.
 
+### Hình G8: Cổng Release Hoặc HOLD
+
+![G8 - Cổng release hoặc HOLD](g8_release_or_hold_gate.png)
+
+Hình này nhắc rằng release là một quyết định có bằng chứng, không phải chỉ vì đã đến hạn. Tất cả artifact như final labels, split, guideline, provenance, QC report, dataset card và chữ ký data owner phải đầy đủ. Thiếu một phần thì kết quả đúng là `HOLD`, kèm người chịu trách nhiệm và thời hạn khắc phục.
+
 Sau release, workflow vẫn tiếp tục. Theo dõi hàng tuần:
 
 - Nguồn, scanner, AP/PA mix, chất lượng ảnh có thay đổi không.
@@ -150,6 +198,12 @@ Sau release, workflow vẫn tiếp tục. Theo dõi hàng tuần:
 - Lỗi tập trung ở scanner, source, projection, chất lượng hay loại bất thường nào.
 
 Mỗi phát hiện phải quay về một bước cụ thể trong lifecycle và có người chịu trách nhiệm xử lý.
+
+### Hình G9: Vòng Phản Hồi Sau Release
+
+![G9 - Vòng phản hồi sau release](g9_monitoring_feedback_loop.png)
+
+Hình này cho thấy annotation lifecycle không kết thúc ở release. Dữ liệu từ vận hành phát hiện source/scanner mới, alert fatigue, ca bị bỏ sót hoặc lỗi tập trung sẽ quay về đúng bước để sửa: collection/preparation, guideline/pilot, annotation/QC hoặc objective/scope. Mỗi phát hiện phải có một owner cụ thể.
 
 ## 11. Sáu Câu Hỏi Có Thể Bị Hỏi
 
